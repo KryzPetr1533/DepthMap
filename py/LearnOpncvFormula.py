@@ -1,28 +1,13 @@
 import numpy as np
 import cv2
-#
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 def nothing(x):
     pass
 
 if __name__ == '__main__':
-    #imgLeft = cv2.imread(r"C:\\Users\\guyju\\source\\repos\\DepthMap\\DepthMap\\CameraCalibTest\\imgL11.jpg")
-    #imgRight = cv2.imread(r"C:\\Users\\guyju\\source\\repos\\DepthMap\\DepthMap\\CameraCalibTest\\imgR11.jpg")
-    #imgR_gray = cv2.cvtColor(imgRight, cv2.COLOR_BGR2GRAY)
-    #imgL_gray = cv2.cvtColor(imgLeft, cv2.COLOR_BGR2GRAY)
-    #plt.figure(figsize=(10, 5))
-    #plt.subplot(1, 2, 1)
-    #plt.imshow(imgLeft)
-    #plt.axis('off')
-    #plt.subplot(1, 2, 2)
-    #plt.imshow(imgRight)
-    #plt.axis('off')
-    #plt.show()
-    #result = ShowDisparity(imgL_gray, imgR_gray, bSize=5)
-    #plt.imshow(result)
-    #plt.axis('off')
-    #plt.show()
-
     disp_map = np.zeros((800, 800, 3))
     CamL_id = 0
     CamR_id = 1
@@ -119,12 +104,10 @@ if __name__ == '__main__':
 
 
             disparity = stereo.compute(imgL_gray, imgR_gray)
-            min = disparity.min()
-            max = disparity.max()
-            disparity = np.uint8(255 * (disparity - min) / (max - min))
+
+            disparity = (disparity / 16.0 - minDisparity) / numDisparities
             cv2.imshow("disp", disparity)
             cv2.imshow("left image", imgL)
 
             if cv2.waitKey(1) == 27:
                 break
-
