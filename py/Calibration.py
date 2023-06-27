@@ -48,7 +48,6 @@ def calibration():
             imgpointsR.append(cornersR)
     cv.destroyAllWindows()
 
-
     print("Calculating left camera parameters ... ")
     retL, mtxL, distL, rvecsL, tvecsL = cv.calibrateCamera(objpoints, imgpointsL, grayL.shape[::-1], None, None)
     hL, wL = grayL.shape[:2]
@@ -93,5 +92,3 @@ def calibration():
     cv_file.write("Trns", Trns)
     cv_file.release()
     print("Finishing Calibration ...")
-
-calibration()
