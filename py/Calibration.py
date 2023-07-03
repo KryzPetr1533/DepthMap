@@ -37,8 +37,16 @@ def calibration():
         retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None)
         if retR and retL:
             objpoints.append(objp)
-            cv.cornerSubPix(grayR, cornersR, (17, 17), (-1, -1), criteria)
-            cv.cornerSubPix(grayL, cornersL, (17, 17), (-1, -1), criteria)
+            cv.cornerSubPix(grayR,
+                            cornersR,
+                            (2*min(chessboardSize[0], chessboardSize[1])-1, 2*min(chessboardSize[0], chessboardSize[1])-1),
+                            (-1, -1),
+                            criteria)
+            cv.cornerSubPix(grayL,
+                            cornersL,
+                            (2*min(chessboardSize[0], chessboardSize[1])-1, 2*min(chessboardSize[0], chessboardSize[1])-1),
+                            (-1, -1),
+                            criteria)
             cv.drawChessboardCorners(outputR, chessboardSize, cornersR, retR)
             cv.drawChessboardCorners(outputL, chessboardSize, cornersL, retL)
             cv.imshow('cornersR', outputR)
