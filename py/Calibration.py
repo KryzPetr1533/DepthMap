@@ -4,7 +4,7 @@ import glob
 
 def calibration():
     # parameters
-    chessboardSize = (9, 15)
+    chessboardSize = (6, 8)
 
     # termination criteria
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -33,8 +33,8 @@ def calibration():
         outputR = imgR.copy()
         grayL = cv.cvtColor(outputL, cv.COLOR_BGR2GRAY)
         grayR = cv.cvtColor(outputR, cv.COLOR_BGR2GRAY)
-        retL, cornersL = cv.findChessboardCorners(grayL, chessboardSize, None)
-        retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None)
+        retL, cornersL = cv.findChessboardCorners(grayL, chessboardSize, None, cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
+        retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None, cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
         if retR and retL:
             objpoints.append(objp)
             cv.cornerSubPix(grayR,
@@ -100,3 +100,5 @@ def calibration():
     cv_file.write("Trns", Trns)
     cv_file.release()
     print("Finishing Calibration ...")
+
+calibration()
