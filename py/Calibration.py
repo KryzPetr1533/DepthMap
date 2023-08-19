@@ -2,9 +2,11 @@ import cv2 as cv
 import numpy as np
 import glob
 
+
 def calibration():
     # parameters
     chessboardSize = (6, 8)
+    cellSize = 3.0  # size of the chessboard cell in cm
 
     # termination criteria
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -33,18 +35,22 @@ def calibration():
         outputR = imgR.copy()
         grayL = cv.cvtColor(outputL, cv.COLOR_BGR2GRAY)
         grayR = cv.cvtColor(outputR, cv.COLOR_BGR2GRAY)
-        retL, cornersL = cv.findChessboardCorners(grayL, chessboardSize, None, cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
-        retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None, cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
+        retL, cornersL = cv.findChessboardCorners(grayL, chessboardSize, None,
+                                                  cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
+        retR, cornersR = cv.findChessboardCorners(grayR, chessboardSize, None,
+                                                  cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_NORMALIZE_IMAGE)
         if retR and retL:
             objpoints.append(objp)
             cv.cornerSubPix(grayR,
                             cornersR,
-                            (2*min(chessboardSize[0], chessboardSize[1])-1, 2*min(chessboardSize[0], chessboardSize[1])-1),
+                            (2 * min(chessboardSize[0], chessboardSize[1]) - 1,
+                             2 * min(chessboardSize[0], chessboardSize[1]) - 1),
                             (-1, -1),
                             criteria)
             cv.cornerSubPix(grayL,
                             cornersL,
-                            (2*min(chessboardSize[0], chessboardSize[1])-1, 2*min(chessboardSize[0], chessboardSize[1])-1),
+                            (2 * min(chessboardSize[0], chessboardSize[1]) - 1,
+                             2 * min(chessboardSize[0], chessboardSize[1]) - 1),
                             (-1, -1),
                             criteria)
             cv.drawChessboardCorners(outputR, chessboardSize, cornersR, retR)
@@ -72,25 +78,26 @@ def calibration():
     criteria_stereo = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     retS, new_mtxL, distL, new_mtxR, distR, Rot, Trns, Emat, Fmat = cv.stereoCalibrate(objpoints,
-                                                                                        imgpointsL,
-                                                                                        imgpointsR,
-                                                                                        new_mtxL,
-                                                                                        distL,
-                                                                                        new_mtxR,
-                                                                                        distR,
-                                                                                        grayL.shape[::-1],
-                                                                                        criteria_stereo,
-                                                                                        flags)
+                                                                                       imgpointsL,
+                                                                                       imgpointsR,
+                                                                                       new_mtxL,
+                                                                                       distL,
+                                                                                       new_mtxR,
+                                                                                       distR,
+                                                                                       grayL.shape[::-1],
+                                                                                       criteria_stereo,
+                                                                                       flags)
 
+    baseline = Trns[0] * cellSize
     rectify_scale = 1  # if 0 image croped, if 1 image not croped
     rect_l, rect_r, proj_mat_l, proj_mat_r, Q, roiL, roiR = cv.stereoRectify(new_mtxL, distL, new_mtxR, distR,
-                                                                              grayL.shape[::-1], Rot, Trns,
-                                                                              rectify_scale, (0, 0))
+                                                                             grayL.shape[::-1], Rot, Trns,
+                                                                             rectify_scale, (0, 0))
 
     Left_Stereo_Map = cv.initUndistortRectifyMap(new_mtxL, distL, rect_l, proj_mat_l,
-                                                  grayL.shape[::-1], cv.CV_16SC2)
+                                                 grayL.shape[::-1], cv.CV_16SC2)
     Right_Stereo_Map = cv.initUndistortRectifyMap(new_mtxR, distR, rect_r, proj_mat_r,
-                                                   grayR.shape[::-1], cv.CV_16SC2)
+                                                  grayR.shape[::-1], cv.CV_16SC2)
     print("Saving parameters ......")
     cv_file = cv.FileStorage(".\\dataparamspy.xml", cv.FILE_STORAGE_WRITE)
     cv_file.write("Left_Stereo_Map_x", Left_Stereo_Map[0])
@@ -98,7 +105,9 @@ def calibration():
     cv_file.write("Right_Stereo_Map_x", Right_Stereo_Map[0])
     cv_file.write("Right_Stereo_Map_y", Right_Stereo_Map[1])
     cv_file.write("Trns", Trns)
+    cv_file.write("Baseline", baseline)
     cv_file.release()
     print("Finishing Calibration ...")
+
 
 calibration()
