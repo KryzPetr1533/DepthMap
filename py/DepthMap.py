@@ -56,19 +56,23 @@ if __name__ == '__main__':
             else:
                 print('Left and right camera frames do not have the same pixel width')
             disparity = stereo.compute(imgL, imgR)
-
-            # Converting to float32
-            disparity = disparity.astype(np.float32)
-
+            disparity = cv.erode(disparity, None, iterations=1)
+            disparity = cv.dilate(disparity, None, iterations=1)
+            disparity_normal = cv.normalize(disparity, None, 0, 255, cv.NORM_MINMAX)
             # Scaling down the disparity values and normalizing them
             # disparity = (disparity / 16.0 - minDisparity) / numDisparities
 
-            depth = np.float32((baseline * f_pixel) / disparity)
+
+            # depth = np.float32((baseline * f_pixel) / disparity_normal)
+
+
+            image = np.array(disparity_normal, dtype=np.uint8)
+            disparity_color = cv.applyColorMap(image, cv.COLORMAP_BONE)
+
+            # Show depth map
+            cv.imshow("Depth map", np.hstack((disparity_color, imgL)))
 
             cv.imshow("disp", disparity)
-            cv.imshow("depth", depth)
-            cv.imshow("left image", imgL)
-            cv.imshow("Left_nice", Left_nice)
             if cv.waitKey(1) == 27:
                 break
 
