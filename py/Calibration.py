@@ -5,8 +5,8 @@ import glob
 
 def calibration():
     # parameters
-    chessboardSize = (6, 8)
-    cellSize = 3.0  # size of the chessboard cell in cm
+    chessboardSize = (9, 6)
+    cellSize = 4.0  # size of the chessboard cell in cm
 
     # termination criteria
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -55,8 +55,7 @@ def calibration():
                             criteria)
             cv.drawChessboardCorners(outputR, chessboardSize, cornersR, retR)
             cv.drawChessboardCorners(outputL, chessboardSize, cornersL, retL)
-            cv.imshow('cornersR', outputR)
-            cv.imshow('cornersL', outputL)
+            cv.imshow('corners', np.hstack((outputR,outputL)))
             cv.waitKey(0)
             imgpointsL.append(cornersL)
             imgpointsR.append(cornersR)
@@ -98,8 +97,13 @@ def calibration():
                                                  grayL.shape[::-1], cv.CV_16SC2)
     Right_Stereo_Map = cv.initUndistortRectifyMap(new_mtxR, distR, rect_r, proj_mat_r,
                                                   grayR.shape[::-1], cv.CV_16SC2)
+    print("Baseline: ", baseline)
+    print("Left_camera_matrix:", mtxL)
+    print("Right_camera_matrix:", mtxR)
     print("Saving parameters ......")
     cv_file = cv.FileStorage(".\\dataparamspy.xml", cv.FILE_STORAGE_WRITE)
+    cv_file.write("Left_cam_mat", mtxL)
+    cv_file.write("Right_cam_mat", mtxR)
     cv_file.write("Left_Stereo_Map_x", Left_Stereo_Map[0])
     cv_file.write("Left_Stereo_Map_y", Left_Stereo_Map[1])
     cv_file.write("Right_Stereo_Map_x", Right_Stereo_Map[0])
@@ -108,6 +112,5 @@ def calibration():
     cv_file.write("Baseline", baseline)
     cv_file.release()
     print("Finishing Calibration ...")
-
 
 calibration()
