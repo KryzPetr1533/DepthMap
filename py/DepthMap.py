@@ -10,7 +10,11 @@ if __name__ == '__main__':
     CamL_id = 0
     CamR_id = 1
     CamL = cv.VideoCapture(CamL_id)
+    CamL.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
+    CamL.set(cv.CAP_PROP_FRAME_HEIGHT, 1080)
     CamR = cv.VideoCapture(CamR_id)
+    CamR.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
+    CamR.set(cv.CAP_PROP_FRAME_HEIGHT, 1080)
     if CamL.isOpened():
         print("Camera with index : L is opened")
     if CamR.isOpened():
@@ -21,13 +25,19 @@ if __name__ == '__main__':
     Right_Stereo_Map_x = cv_file.getNode("Right_Stereo_Map_x").mat()
     Right_Stereo_Map_y = cv_file.getNode("Right_Stereo_Map_y").mat()
     baseline = cv_file.getNode("Baseline").mat()[0][0]
+    left_cam_mat = cv_file.getNode("Left_cam_mat").mat()
+    right_cam_mat = cv_file.getNode("Right_cam_mat").mat()
     cv_file.release()
     print("Baseline: ")
     print(baseline)
+    print("Left camera matrix:")
+    print(left_cam_mat)
+    print("Right camera matrix:")
+    print(right_cam_mat)
     cv.namedWindow('trackbar', cv.WINDOW_NORMAL)
     cv.createTrackbar('preFilterCap', 'trackbar', 10, 70, nothing)
     cv.createTrackbar('SADWindowSize', 'trackbar', 1, 10, nothing)
-    cv.createTrackbar('minDisparity', 'trackbar', -5, 20, nothing)
+    cv.createTrackbar('minDisparity', 'trackbar', 0, 20, nothing)
     cv.createTrackbar('numberOfDisparities', 'trackbar', 1, 10, nothing)
     cv.createTrackbar('P', 'trackbar', 1, 100, nothing)
     cv.createTrackbar('uniquenessRatio', 'trackbar', 5, 100, nothing)
@@ -47,6 +57,7 @@ if __name__ == '__main__':
     while cv.waitKey(1) != 27:
         retL, imgL = CamL.read()
         retR, imgR = CamR.read()
+
         preFilterCap = cv.getTrackbarPos('preFilterCap', 'trackbar')
         SADWindowSize = cv.getTrackbarPos('SADWindowSize', 'trackbar') * 2 + 1
         minDisparity = cv.getTrackbarPos('minDisparity', 'trackbar')
@@ -66,52 +77,67 @@ if __name__ == '__main__':
         stereo.setMinDisparity(minDisparity)
 
         if retL and retR:
-            # # Applying stereo image rectification on the left image
-            # Left_nice = cv.remap(imgL,
-            #                      Left_Stereo_Map_x,
-            #                      Left_Stereo_Map_y,
-            #                      cv.INTER_LANCZOS4,
-            #                      cv.BORDER_CONSTANT,
-            #                      0)
-            #
-            # # Applying stereo image rectification on the right image
-            # Right_nice = cv.remap(imgR,
-            #                       Right_Stereo_Map_x,
-            #                       Right_Stereo_Map_y,
-            #                       cv.INTER_LANCZOS4,
-            #                       cv.BORDER_CONSTANT,
-            #                       0)
+            # Applying stereo image rectification on the left image
+            Left_nice = cv.remap(imgL,
+                                 Left_Stereo_Map_x,
+                                 Left_Stereo_Map_y,
+                                 cv.INTER_LANCZOS4,
+                                 cv.BORDER_CONSTANT,
+                                 0)
+
+            # Applying stereo image rectification on the right image
+            Right_nice = cv.remap(imgR,
+                                  Right_Stereo_Map_x,
+                                  Right_Stereo_Map_y,
+                                  cv.INTER_LANCZOS4,
+                                  cv.BORDER_CONSTANT,
+                                  0)
 
             # left_grey = cv.cvtColor(imgL, cv.COLOR_BGR2GRAY)
             # right_grey = cv.cvtColor(imgR, cv.COLOR_BGR2GRAY)
             # imgL = cv.resize(imgL, (wr, hr))
             # imgR = cv.resize(imgL, (wr, hr))
-            disparity = stereo.compute(imgL, imgR)
-            #print(np.shape(disparity))
-            disparity = cv.erode(disparity, None, iterations=1)
-            disparity = cv.dilate(disparity, None, iterations=1)
+            # Left_nice = cv.erode(Left_nice, None, iterations=1)
+            # Left_nice = cv.dilate(Left_nice, None, iterations=1)
+            # Left_nice = cv.blur(Left_nice, (5, 5))
+            # Right_nice = cv.blur(Right_nice, (5, 5))
+            disparity = stereo.compute(imgL, imgR).astype(np.float32)/16/numberOfDisparities
+            # print(np.shape(disparity))
+            # disparity = cv.blur(disparity, (5, 5))
+            # disparity = cv.erode(disparity, None, iterations=1)
+            # disparity = cv.dilate(disparity, None, iterations=1)
             disparity_normal = cv.normalize(disparity, None, 0, 255, cv.NORM_MINMAX)
 
+            hr, wr, dr = Left_nice.shape
+            # hl, wl, dl = imgL.shape
+            f_pixel = left_cam_mat[0][0]
             #print(len(disparity_normal), len(disparity_normal[0]))
-            # depth = (baseline * f_pixel) / disparity
-            # depth_normal = cv.normalize(depth, None, 0, 255, cv.NORM_MINMAX)
+            disparity[disparity == 0] = 1
+            depth = (baseline * f_pixel) / disparity
+            depth_normal = cv.normalize(depth, None, 0, 255, cv.NORM_MINMAX)
             image = np.array(disparity, dtype=np.uint8)
+            # depth_image = np.array(depth_normal, dtype=np.uint8)
             disparity_color = cv.applyColorMap(image, cv.COLORMAP_JET)
-
+            # depth_color = cv.applyColorMap(depth_normal, cv.COLORMAP_JET)
+            print('')
             # Show depth map
-            cv.imshow("Disparity", np.hstack((disparity_color, imgL)))
+            cv.imshow("Depth", depth)
+            cv.imshow("Disparity", disparity_color)
+            cv.imshow("images", imgL)
 
     #Save data into txt file
     np.set_printoptions(threshold=np.inf)
-    # file = open('depth.txt', 'w')
-    # file.write(np.array2string(depth, max_line_width=None))
-    # file.close()
+    file = open('depth.txt', 'w')
+    file.write(np.array2string(depth, max_line_width=None))
+    file.close()
     file = open('disparity.txt', 'w')
     file.write(np.array2string(disparity, max_line_width=None))
     file.close()
-    file = open('disparity_normal.txt', 'w')
-    file.write(np.array2string(disparity_normal, max_line_width=None))
-    file.close()
+    # file = open('disparity_normal.txt', 'w')
+    # file.write(np.array2string(disparity_normal, max_line_width=None))
+    #file.close()
+    np.save('depth', depth)
+    cv.imwrite('test.jpg', Left_nice)
 
 # Release and destroy all windows before termination
 CamL.release()
