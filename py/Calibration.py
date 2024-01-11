@@ -5,7 +5,7 @@ import glob
 
 def calibration():
     # parameters
-    chessboardSize = (9, 6)
+    chessboardSize = (6, 9)
     cellSize = 4.0  # size of the chessboard cell in cm
 
     # termination criteria
@@ -21,12 +21,14 @@ def calibration():
     imgpointsR = []
 
     # Paths to photos for the calibration
-    path = ".\\CameraCalibTest\\"
+    path = ('C:\\Users\\petra\\OneDrive\\Documents\\My_docs\\Drone\\DepthMap\\CameraCalibTestPhotos\\camera_calib_6x9\\')
+
     extention = ".jpg"
     imageL = "imgL"
     imageR = "imgR"
-    imagesLeft = glob.glob(path + imageL + '*' + extention)
-    imagesRight = glob.glob(path + imageR + '*' + extention)
+    imagesLeft = glob.glob(path + imageL + '*' + extention).sort()
+    imagesRight = glob.glob(path + imageR + '*' + extention).sort()
+    print()
 
     for imgLeft, imgRight in zip(imagesLeft, imagesRight):
         imgL = cv.imread(imgLeft)
@@ -55,7 +57,7 @@ def calibration():
                             criteria)
             cv.drawChessboardCorners(outputR, chessboardSize, cornersR, retR)
             cv.drawChessboardCorners(outputL, chessboardSize, cornersL, retL)
-            cv.imshow('corners', np.hstack((outputR,outputL)))
+            cv.imshow('corners', np.hstack((outputR, outputL)))
             cv.waitKey(0)
             imgpointsL.append(cornersL)
             imgpointsR.append(cornersR)
@@ -112,5 +114,6 @@ def calibration():
     cv_file.write("Baseline", baseline)
     cv_file.release()
     print("Finishing Calibration ...")
+
 
 calibration()

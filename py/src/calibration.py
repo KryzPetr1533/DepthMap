@@ -66,6 +66,8 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
                 cv.imshow('cornersL', output_l)
                 cv.imshow('cornersR', output_r)
                 cv.waitKey(0)
+        else:
+            logging.error("Didn't find corners")
 
     cv.destroyAllWindows()
 
@@ -127,6 +129,8 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
     cv_file.write("Right_Stereo_Map_y", Right_Stereo_Map[1])
     cv_file.write("Trns", Trns)
     cv_file.write("Baseline", baseline)
+    cv_file.write("Left_cam_mat", mtxL)
+    cv_file.write("Right_cam_mat", mtxR)
     cv_file.release()
 
     if verbose:
@@ -134,12 +138,13 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='script fot stereo camera calibration')
+    parser = argparse.ArgumentParser(description='script for stereo camera calibration')
     parser.add_argument("--photos_path", type=str, required=True,
                         help="path to directory with paired images")
     parser.add_argument("--calibration_params_path", type=str, required=True,
                         help="path to directory with paired images")
-    parser.add_argument('--chessboard_size', nargs=2, type=int, required=True,)
+    parser.add_argument('--chessboard_size', nargs=2, type=int, required=True,
+                        help="2 numbers each one is for number of cells in chessboard")
     parser.add_argument('--cell_size', type=int, required=True)
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--draw', action='store_true')
@@ -149,10 +154,10 @@ if __name__ == "__main__":
     if not images:
         logging.error("path don't has valid photos")
         exit()
-
     stereo_calibration(images,
                        chessboard_size=args.chessboard_size,
                        cell_size=args.cell_size,
                        calibration_params_path=args.calibration_params_path,
                        draw_images=args.draw,
                        verbose=args.verbose)
+

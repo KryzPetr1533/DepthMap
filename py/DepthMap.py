@@ -19,7 +19,7 @@ if __name__ == '__main__':
         print("Camera with index : L is opened")
     if CamR.isOpened():
         print("Camera with index : R is opened")
-    cv_file = cv.FileStorage(".\\dataparamspy.xml", cv.FILE_STORAGE_READ)
+    cv_file = cv.FileStorage(".\\parameters.xml", cv.FILE_STORAGE_READ)
     Left_Stereo_Map_x = cv_file.getNode("Left_Stereo_Map_x").mat()
     Left_Stereo_Map_y = cv_file.getNode("Left_Stereo_Map_y").mat()
     Right_Stereo_Map_x = cv_file.getNode("Right_Stereo_Map_x").mat()
