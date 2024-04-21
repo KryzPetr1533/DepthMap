@@ -1,0 +1,13 @@
+launch:
+
+- node:
+    pkg: "depth_projector"
+    exec: "projector"
+    name: "projector"
+    namespace: "depth_projector"
+
+- node:
+    pkg: "depth_projector"
+    exec: "depth_publisher"
+    name: "depth_publisher"
+    namespace: "depth_projector"
