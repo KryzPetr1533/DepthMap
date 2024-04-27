@@ -1,4 +1,9 @@
 launch:
+- node:
+    pkg: "disparity_estimator"
+    exec: "disparity_publisher"
+    name: "disparity_publisher"
+    namespace: "depth_projector"
 
 - node:
     pkg: "depth_projector"
@@ -11,3 +16,4 @@ launch:
     exec: "depth_publisher"
     name: "depth_publisher"
     namespace: "depth_projector"
+

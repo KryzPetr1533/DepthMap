@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'disparity_publisher = depth_projector.disparity_publisher:main',
             'depth_publisher = depth_projector.mock_depth_publisher:main',
             'projector = depth_projector.projector:main'
         ],
