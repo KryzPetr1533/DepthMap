@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'camera_pub_1      = camera_setup.camera_pub_1:main',
+            'camera_pub_2      = camera_setup.camera_pub_2:main',
             'disparity_publisher = depth_projector.disparity_publisher:main',
             'depth_publisher = depth_projector.mock_depth_publisher:main',
             'projector = depth_projector.projector:main'
