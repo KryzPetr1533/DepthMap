@@ -1,0 +1,5 @@
+---
+float64 focal_length
+float64 baseline
+int64 image_width
+int64 image_height
