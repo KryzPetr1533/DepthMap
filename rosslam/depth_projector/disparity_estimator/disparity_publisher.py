@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-import cv2
+import cv2 as cv
 import numpy as np
 from msgs_definitions.msg import DisparityData
 import message_filters
@@ -19,7 +19,6 @@ class DisparityPublisher(Node):
 
         # Basic setup
         self.bridge = CvBridge()
-        self.timer = self.create_timer(0.5, self.timer_callback)  # Adjust timer as needed
 
         # Images subscription
         self.left_image_sub = message_filters.Subscriber(self, 'left_image', Image)
@@ -65,27 +64,38 @@ class DisparityPublisher(Node):
         Run inference
         Return disparity
         '''
-        # Convert to CHW format for TRT
-        left_img_chw = left_img.transpose((2, 0, 1))
-        right_img_chw = right_img.transpose((2, 0, 1))
+        engine = load_trt_engine('model.engine')
 
-        d_left_img = cuda.mem_alloc(left_img_chw.nbytes)
-        d_right_img = cuda.mem_alloc(right_img_chw.nbytes)
-        d_disparity = cuda.mem_alloc(left_img_chw.nbytes)
-        bindings = [int(d_left_img), int(d_right_img), int(d_disparity)]
+        context = engine.create_execution_context()
+
+        
+        target_height, target_width = 720, 1280 # Sizes for current model TODO params of the model
+        left_img_res = cv.resize(left_img, (target_width, target_height))
+        right_img_res = cv.resize(right_img, (target_width, target_height))
+
+        # Convert to CHW format for TRT and ensure they are contiguous
+        left_img_chw = left_img_res.transpose((2, 0, 1)).astype('float32')
+        right_img_chw = right_img_res.transpose((2, 0, 1)).astype('float32')
+
+        input_tensor = np.ascontiguousarray(np.array([left_img_chw, right_img_chw]))
+        input_tensor = np.expand_dims(input_tensor, axis=0)
+        output = np.empty((1, 720, 1280, 1), dtype=np.float32)
+        d_input = cuda.mem_alloc(input_tensor.nbytes)
+        d_output = cuda.mem_alloc(output.nbytes)
+
+        context.set_tensor_address(engine.get_tensor_name(0), int(d_input)) # input buffer
+        context.set_tensor_address(engine.get_tensor_name(1), int(d_output)) # output buffer
 
         stream = cuda.Stream()
         # Copy images to the GPU
-        cuda.memcpy_htod_async(d_left_img, left_img_chw, stream)
-        cuda.memcpy_htod_async(d_right_img, right_img_chw, stream)
+        cuda.memcpy_htod_async(d_input, input_tensor, stream)
 
-        # Run inference
-        self.context.execute_async(bindings=bindings, stream_handle=stream.handle)
-
+        success = context.execute_async_v3(stream_handle=stream.handle)
+        print(success)
         # Copy result from GPU
-        output = np.empty((right_img_chw.shape[1], right_img_chw.shape[2]), dtype=np.int16)
-        cuda.memcpy_dtoh_async(output, d_disparity, stream)
+        cuda.memcpy_dtoh_async(output, d_output, stream)
         stream.synchronize()
+        output = np.squeeze(output, axis=(0, 3))  # Shape: [720, 1280]
 
         return output
 
