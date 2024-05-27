@@ -1,8 +1,14 @@
 launch:
 - node:
     pkg: "depth_projector"
-    exec: "disparity_publisher"
-    name: "disparity_publisher"
+    exec: "camera_pub"
+    name: "camera_pub"
+    namespace: "depth_projector"
+
+- node:
+    pkg: "depth_projector"
+    exec: "depth_publisher"
+    name: "stereo_image_processor"
     namespace: "depth_projector"
 
 - node:
@@ -10,10 +16,3 @@ launch:
     exec: "projector"
     name: "projector"
     namespace: "depth_projector"
-
-- node:
-    pkg: "depth_projector"
-    exec: "depth_publisher"
-    name: "depth_publisher"
-    namespace: "depth_projector"
-

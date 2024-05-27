@@ -11,20 +11,23 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'pycuda',
+        'tensorrt',
+    ],
     zip_safe=True,
-    maintainer='emperornao',
-    maintainer_email='ansicpp2020@gmail.com',
+    maintainer='devExplorer',
+    maintainer_email='pkkryzh1533@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_pub_1      = camera_setup.camera_pub_1:main',
-            'camera_pub_2      = camera_setup.camera_pub_2:main',
-            'disparity_publisher = depth_projector.disparity_publisher:main',
-            'depth_publisher = depth_projector.mock_depth_publisher:main',
+            'camera_pub = camera_publisher.image_publisher:main',
+            'disparity_publisher = disparity_publisher.disparity_publisher:main',
             'projector = depth_projector.projector:main'
         ],
+        
     },
 )

@@ -21,9 +21,16 @@ class MockDepthPublisher(Node):
     def read_intrinsics(self, file_path):
         with open(file_path) as fr:
             lines = fr.read().split('\n')
-
+        
+        baseline = None
+        f = None
         intr = None
         for line in lines:
+            if line.startswith('F_101: '):
+                line = line.lstrip('F_101: ')
+            if line.startswith('T103: '):
+                line = line.lstrip('T103: ')
+                baseline = np.linalg.norm(np.array(list(map(float, line.split()))))
             if line.startswith('K_101: '):
                 line = line.lstrip('K_101: ')
                 intr = np.array(list(map(float, line.split()))).reshape(3, 3)
@@ -31,9 +38,15 @@ class MockDepthPublisher(Node):
 
     def __init__(self):
         super().__init__('minimal_publisher')
+        self.disparity_io = self.create_subscription(
+            DisparityData,
+            'disparity_data',
+            self.disparity_callback,
+            10
+        )
         self.publisher_ = self.create_publisher(Depth, 'depth', 10)
         timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
+        # self.timer = self.create_timer(timer_period, self.timer_callback)
         self.intr = self.read_intrinsics(intrinsics)
         self.i = 0
 
