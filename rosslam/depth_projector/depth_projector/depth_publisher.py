@@ -57,6 +57,7 @@ class DepthPublisher(Node):
 
         # Read the rectified camera matrix
         intrinsics['Rectifyed_mat_left'] = cv_file.getNode("Rectifyed_mat_left").mat()
+        intrinsics['Mat_left'] = cv_file.getNode("Mat_left").mat()
 
         # Read the baseline (distance between the two cameras)
         intrinsics['Baseline'] = cv_file.getNode("Baseline").real()
@@ -92,13 +93,9 @@ class DepthPublisher(Node):
         Run inference
         Return disparity
         '''
-        engine = self.load_trt_engine('model.engine')
-
-        context = engine.create_execution_context()
-
         rectified_left = cv.remap(left_img, self.intrinsics['Left_Stereo_Map_x'], self.intrinsics['Left_Stereo_Map_y'], cv.INTER_LINEAR)
         rectified_right = cv.remap(right_img, self.intrinsics['Right_Stereo_Map_x'], self.intrinsics['Right_Stereo_Map_y'], cv.INTER_LINEAR)
-        target_height, target_width = 720, 1280 # Sizes for current model TODO params of the model
+        target_height, target_width = 480, 640 # Sizes for current model TODO params of the model
         left_img_res = cv.resize(rectified_left, (target_width, target_height))
         right_img_res = cv.resize(rectified_right, (target_width, target_height))
 
@@ -108,23 +105,23 @@ class DepthPublisher(Node):
 
         input_tensor = np.ascontiguousarray(np.array([left_img_chw, right_img_chw]))
         input_tensor = np.expand_dims(input_tensor, axis=0)
-        output = np.empty((1, 720, 1280, 1), dtype=np.float32)
+        output = np.empty((1, target_height, target_width, 1), dtype=np.float32)
         d_input = cuda.mem_alloc(input_tensor.nbytes)
         d_output = cuda.mem_alloc(output.nbytes)
 
-        context.set_tensor_address(engine.get_tensor_name(0), int(d_input)) # input buffer
-        context.set_tensor_address(engine.get_tensor_name(1), int(d_output)) # output buffer
+        self.context.set_tensor_address(self.engine.get_tensor_name(0), int(d_input)) # input buffer
+        self.context.set_tensor_address(self.engine.get_tensor_name(1), int(d_output)) # output buffer
 
         stream = cuda.Stream()
         # Copy images to the GPU
         cuda.memcpy_htod_async(d_input, input_tensor, stream)
 
-        success = context.execute_async_v3(stream_handle=stream.handle)
+        success = self.context.execute_async_v3(stream_handle=stream.handle)
         print(success)
         # Copy result from GPU
         cuda.memcpy_dtoh_async(output, d_output, stream)
         stream.synchronize()
-        output = np.squeeze(output, axis=(0, 3))  # Shape: [720, 1280]
+        output = np.squeeze(output, axis=(0, 3))  # Shape: [480, 640]
 
         return output
     
@@ -133,9 +130,9 @@ class DepthPublisher(Node):
         Convert disparity to depth
         '''
         # Filter some invalid values
-        disparity[disparity <= 0] = np.inf
-        disparity[disparity > 20] = np.inf
-        return (self.intrinsics['Baseline'] * self.intrinsics['Rectifyed_mat_left'][0, 0]) / disparity
+        disparity[disparity <= 0] = None
+        disparity[disparity > 200] = None
+        return (self.intrinsics['Baseline'] * self.intrinsics['Mat_left'][0, 0]) / disparity
     
 def main(args=None):
     rclpy.init(args=args)
