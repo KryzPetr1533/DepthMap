@@ -5,8 +5,8 @@ from cv_bridge import CvBridge
 import cv2
 
 class ImagePublisher(Node):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__('camera_pub')
         self.left_image = self.create_publisher(Image, 'left_image', 10)
         self.right_image = self.create_publisher(Image, 'right_image', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)
@@ -38,3 +38,6 @@ def main(args=None):
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

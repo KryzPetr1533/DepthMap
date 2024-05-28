@@ -12,7 +12,7 @@ import pycuda.autoinit
 
 class DepthPublisher(Node):
     def __init__(self):
-        super().__init__('stereo_image_processor')
+        super().__init__('depth_publisher')
         # Load TRT engine
         self.engine = self.load_trt_engine('../../model_converter/model.engine')
         self.context = self.engine.create_execution_context()

@@ -13,6 +13,9 @@ setup(
     ],
     install_requires=[
         'setuptools',
+        'opencv-python',  # Ensure all required packages are listed
+        'cv_bridge',
+        'numpy',
         'pycuda',
         'tensorrt',
     ],
@@ -24,9 +27,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_pub = camera_publisher.image_publisher:main',
-            'disparity_publisher = disparity_publisher.disparity_publisher:main',
-            'projector = depth_projector.projector:main'
+            "camera_pub = depth_projector.camera_pub:main",
+            "depth_publisher = depth_projector.depth_publisher:main",
+            "projector = depth_projector.projector:main"
         ],
         
     },
