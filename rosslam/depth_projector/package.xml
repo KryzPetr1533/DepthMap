@@ -14,6 +14,9 @@
   <exec_depend>msgs_definitions</exec_depend>
   
   <depend>python3-opencv</depend>
+  <depend>cv_bridge</depend>
+  <depend>pycuda</depend>
+  <depend>tensorrt</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
