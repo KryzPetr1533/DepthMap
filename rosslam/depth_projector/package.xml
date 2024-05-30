@@ -12,9 +12,9 @@
   <exec_depend>rclpy</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   <exec_depend>msgs_definitions</exec_depend>
-  
+  <exec_depend>cv_bridge</exec_depend>
   <depend>python3-opencv</depend>
-  <depend>cv_bridge</depend>
+  
   <depend>pycuda</depend>
   <depend>tensorrt</depend>
 
