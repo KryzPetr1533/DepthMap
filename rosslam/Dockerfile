@@ -19,7 +19,7 @@ RUN apt-get -y install python3-pip
 RUN python3 -m pip install --upgrade pip
 
 # install project dependecies
-RUN cat /opt/ros/humble/install/setup.bash >> ~/.bashrc
+RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc
 RUN touch /root/setup.sh
 
 # launch terminal
