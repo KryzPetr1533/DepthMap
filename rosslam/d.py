@@ -1,7 +1,6 @@
 import argparse
 import subprocess
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='Docker runner')
 
@@ -25,9 +24,12 @@ if __name__ == "__main__":
         subprocess.check_call(cmd)
     if "start" in args.actions:
         cmd = ["docker", "run",
+               "--rm", "-it",
+               "--runtime", "nvidia",
+               "--network", "host",
+               "--gpus", "all",
+               "-e", "DISPLAY",
                "--hostname", args.hostname,
-               "-it", "--rm",
-               "--net=host",
                "-v", ".:/rosslam",
                "--name", args.name,
                args.image
@@ -37,4 +39,3 @@ if __name__ == "__main__":
             subprocess.check_call(cmd)
         except subprocess.CalledProcessError as exception:
             print(exception)
-
