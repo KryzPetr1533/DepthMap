@@ -1,5 +1,5 @@
 FROM python:3.8
-FROM ros:humble
+FROM dustynv/ros:humble-ros-base-l4t-r32.7.1
 
 # cool terminal
 ENV TERM=xterm-256color
@@ -19,7 +19,7 @@ RUN apt-get -y install python3-pip
 RUN python3 -m pip install --upgrade pip
 
 # install project dependecies
-RUN cat /opt/ros/humble/setup.bash >> ~/.bashrc
+# RUN cat /opt/ros/humble/setup.bash >> ~/.bashrc
 RUN touch /root/setup.sh
 
 # launch terminal
