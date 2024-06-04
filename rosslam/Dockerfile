@@ -19,13 +19,13 @@ RUN apt-get -y install python3-pip
 RUN python3 -m pip install --upgrade pip
 
 # install l4v-utils for camera checking 
-RUN apt-get -y install l4v-utils
+RUN apt-get -y install v4l-utils
 
 # install ROS dependencies
-RUN pip3 install -r requirements.txt
 
 # install project dependecies
 RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc
+# RUN cat /opt/ros/humble/setup.bash >> ~/.bashrc
 RUN touch /root/setup.sh
 
 # launch terminal

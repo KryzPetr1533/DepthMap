@@ -25,9 +25,14 @@ if __name__ == "__main__":
         subprocess.check_call(cmd)
     if "start" in args.actions:
         cmd = ["docker", "run",
+               "--rm", "-it",
+               "--runtime", "nvidia",
+               "--network", "host",
+               "--gpus", "all",
+               "-e", "DISPLAY",
+               "--device", "/dev/video0",
+               "--device", "/dev/video1",
                "--hostname", args.hostname,
-               "-it", "--rm",
-               "--net=host",
                "-v", ".:/rosslam",
                "--name", args.name,
                args.image
