@@ -1,1 +1,2 @@
-pycuda==2020.1
+setuptools==58.02.0
+pycuda==2019.1
