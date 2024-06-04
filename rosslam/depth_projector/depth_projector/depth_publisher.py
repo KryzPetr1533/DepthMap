@@ -18,7 +18,6 @@ class DepthPublisher(Node):
         self.declare_parameter('frame_height', 480)
 
         # Get parameters
-        self.fps = self.get_parameter('fps').get_parameter_value().integer_value
         self.frame_width = self.get_parameter('frame_width').get_parameter_value().integer_value
         self.frame_height = self.get_parameter('frame_height').get_parameter_value().integer_value
 
@@ -42,8 +41,8 @@ class DepthPublisher(Node):
         '''
         Load TRT engine
         '''
-        TRT_LOGGER = trt.Logger(trt.Logger.INFO)
-        with open(engine_path, 'rb') as f, trt.Runtime(TRT_LOGGER) as runtime:
+        # TRT_LOGGER = trt.Logger(trt.Logger.INFO)
+        with open(engine_path, 'rb') as f, trt.Runtime("""TRT_LOGGER""") as runtime:
             engine = runtime.deserialize_cuda_engine(f.read())
         return engine
     
@@ -125,7 +124,11 @@ class DepthPublisher(Node):
         # Copy images to the GPU
         cuda.memcpy_htod_async(d_input, input_tensor, stream)
 
-        success = self.context.execute_async_v3(stream_handle=stream.handle)
+        bindings = [int(d_input), int(d_output)]
+
+        success =   self.context.execute_async_v2(bindings=bindings, stream_handle=stream.handle)
+
+        # self.context.execute_async_v3(stream_handle=stream.handle)
         print(success)
         # Copy result from GPU
         cuda.memcpy_dtoh_async(output, d_output, stream)
