@@ -22,6 +22,7 @@ RUN python3 -m pip install --upgrade pip
 RUN apt-get -y install v4l-utils
 
 # install ROS dependencies
+RUN python3 -m pip install -r requirements.txt
 
 # install project dependecies
 RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc

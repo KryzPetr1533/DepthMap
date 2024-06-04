@@ -7,12 +7,33 @@ import cv2
 class ImagePublisher(Node):
     def __init__(self):
         super().__init__('camera_pub')
+        self.declare_parameter('fps', 30)
+        self.declare_parameter('frame_width', 640)
+        self.declare_parameter('frame_height', 480)
+
+        # Get parameters
+        self.fps = self.get_parameter('fps').get_parameter_value().integer_value
+        self.frame_width = self.get_parameter('frame_width').get_parameter_value().integer_value
+        self.frame_height = self.get_parameter('frame_height').get_parameter_value().integer_value
+
+        self.get_logger().info('Camera fps: {}'.format(self.fps))
+        self.get_logger().info('Camera frame width: {}'.format(self.frame_width))
+        self.get_logger().info('Camera frame height: {}'.format(self.frame_height))
+
         self.left_image = self.create_publisher(Image, 'left_image', 10)
         self.right_image = self.create_publisher(Image, 'right_image', 10)
         
         
-        self.cap_left = cv2.VideoCapture(0)
-        self.cap_right = cv2.VideoCapture(1)
+        self.cap_left = cv2.VideoCapture(0, cv2.CAP_V4L2)
+        self.cap_right = cv2.VideoCapture(1, cv2.CAP_V4L2)
+
+        self.cap_left.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
+        self.cap_left.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
+        self.cap_left.set(cv2.CAP_PROP_FPS, self.fps)
+
+        self.cap_right.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
+        self.cap_right.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
+        self.cap_right.set(cv2.CAP_PROP_FPS, self.fps)
 
         if not self.cap_left.isOpened():
             self.get_logger().error('Failed to open left camera')

@@ -13,6 +13,16 @@ import pycuda.autoinit
 class DepthPublisher(Node):
     def __init__(self):
         super().__init__('depth_publisher')
+
+        self.declare_parameter('fps', 30)
+        self.declare_parameter('frame_width', 640)
+        self.declare_parameter('frame_height', 480)
+
+        # Get parameters
+        self.fps = self.get_parameter('fps').get_parameter_value().integer_value
+        self.frame_width = self.get_parameter('frame_width').get_parameter_value().integer_value
+        self.frame_height = self.get_parameter('frame_height').get_parameter_value().integer_value
+
         # Load TRT engine
         self.engine = self.load_trt_engine('../../model_converter/model.engine')
         self.context = self.engine.create_execution_context()
@@ -95,7 +105,7 @@ class DepthPublisher(Node):
         '''
         rectified_left = cv.remap(left_img, self.intrinsics['Left_Stereo_Map_x'], self.intrinsics['Left_Stereo_Map_y'], cv.INTER_LINEAR)
         rectified_right = cv.remap(right_img, self.intrinsics['Right_Stereo_Map_x'], self.intrinsics['Right_Stereo_Map_y'], cv.INTER_LINEAR)
-        target_height, target_width = 480, 640 # Sizes for current model TODO params of the model
+        target_height, target_width = self.frame_height, self.frame_width
         left_img_res = cv.resize(rectified_left, (target_width, target_height))
         right_img_res = cv.resize(rectified_right, (target_width, target_height))
 

@@ -4,12 +4,20 @@ launch:
     exec: "camera_pub"
     name: "camera_pub"
     namespace: "depth_projector"
+    parameters:
+        - fps: 30
+        - frame_width: 1920
+        - frame_height: 1080
 
 - node:
     pkg: "depth_projector"
     exec: "depth_publisher"
     name: "depth_publisher"
     namespace: "depth_projector"
+    parameters:
+        - fps: 30
+        - frame_width: 1920
+        - frame_height: 1080
 
 - node:
     pkg: "depth_projector"
