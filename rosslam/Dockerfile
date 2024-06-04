@@ -21,6 +21,9 @@ RUN python3 -m pip install --upgrade pip
 # install l4v-utils for camera checking 
 RUN apt-get -y install v4l-utils
 
+# Copy requirements.txt
+COPY requirements.txt /rosslam/requirements.txt
+
 # install ROS dependencies
 RUN python3 -m pip install -r requirements.txt
 

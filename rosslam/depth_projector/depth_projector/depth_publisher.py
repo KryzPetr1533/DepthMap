@@ -13,8 +13,7 @@ import pycuda.autoinit
 class DepthPublisher(Node):
     def __init__(self):
         super().__init__('depth_publisher')
-
-        self.declare_parameter('fps', 30)
+        
         self.declare_parameter('frame_width', 640)
         self.declare_parameter('frame_height', 480)
 
