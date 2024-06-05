@@ -26,10 +26,10 @@ if __name__ == "__main__":
     if "start" in args.actions:
         cmd = ["docker", "run",
                "--rm", "-it",
-               "--runtime", "nvidia",
+            #    "--runtime", "nvidia",
                "--network", "host",
-               "--gpus", "all",
-               "-e", "DISPLAY",
+            #    "--gpus", "all",
+            #    "-e", "DISPLAY",
                "--device", "/dev/video0",
                "--device", "/dev/video1",
                "--hostname", args.hostname,
