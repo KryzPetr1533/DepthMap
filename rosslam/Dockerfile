@@ -1,5 +1,5 @@
 FROM python:3.8
-FROM dustynv/ros:humble-ros-base-l4t-r32.7.1
+FROM ros:humble
 
 # cool terminal
 ENV TERM=xterm-256color
@@ -22,14 +22,14 @@ RUN python3 -m pip install --upgrade pip
 RUN apt-get -y install v4l-utils
 
 # Copy requirements.txt
-COPY requirements.txt /rosslam/requirements.txt
+#COPY requirements.txt /rosslam/requirements.txt
 
 # install ROS dependencies
-RUN python3 -m pip install -r requirements.txt
+#RUN python3 -m pip install -r requirements.txt
 
 # install project dependecies
-RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc
-# RUN cat /opt/ros/humble/setup.bash >> ~/.bashrc
+# RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc
+RUN cat /opt/ros/humble/setup.bash >> ~/.bashrc
 RUN touch /root/setup.sh
 
 # launch terminal
