@@ -26,12 +26,11 @@ if __name__ == "__main__":
     if "start" in args.actions:
         cmd = ["docker", "run",
                "--rm", "-it",
-            #    "--runtime", "nvidia",
                "--network", "host",
-            #    "--gpus", "all",
-            #    "-e", "DISPLAY",
+               "--gpus", "all",
+               "-e", "DISPLAY",
                "--device", "/dev/video0",
-               "--device", "/dev/video1",
+               "--device", "/dev/video2",
                "--hostname", args.hostname,
                "-v", ".:/rosslam",
                "--name", args.name,
@@ -42,4 +41,3 @@ if __name__ == "__main__":
             subprocess.check_call(cmd)
         except subprocess.CalledProcessError as exception:
             print(exception)
-
