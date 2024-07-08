@@ -1,2 +1,4 @@
-setuptools==58.02.0
-pycuda==2019.1
+setuptools
+opencv-python
+pycuda
+tensorrt-cu12==10.1.0
