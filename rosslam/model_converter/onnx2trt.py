@@ -1,22 +1,39 @@
 import tensorrt as trt
+import os
 
-model_path = 'model.onnx'
+def build_engine(model_path, engine_path):
+    logger = trt.Logger(trt.Logger.WARNING)
+    builder = trt.Builder(logger)
+    network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
+    parser = trt.OnnxParser(network, logger)
 
-logger = trt.Logger(trt.Logger.WARNING)
-builder = trt.Builder(logger)
-flag = (1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
+    with open(model_path, 'rb') as model_file:
+        if not parser.parse(model_file.read()):
+            print("Failed to parse the ONNX file.")
+            for error in range(parser.num_errors):
+                print(parser.get_error(error))
+            return None
 
-network = builder.create_network(flag)
-parser = trt.OnnxParser(network, logger)
-success = parser.parse_from_file(model_path)
-for idx in range(parser.num_errors):
-    print(parser.get_error(idx))
-if not success:
-    pass
+    config = builder.create_builder_config()
+    config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 1 << 30)
 
-config = builder.create_builder_config()
-config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 1 << 30) #Тут надо посмотреть сколько точно надо
-serialized_engine = builder.build_serialized_network(network, config)
-print(type(serialized_engine))
-with open('model.engine', 'wb') as f:
-    f.write(serialized_engine)
+    serialized_engine = builder.build_serialized_network(network, config)
+    if serialized_engine is None:
+        print("Failed to build the engine.")
+        return None
+
+    with open(engine_path, 'wb') as f:
+        f.write(serialized_engine)
+    
+    print(f"Engine successfully saved to {engine_path}")
+    return engine_path
+
+# Ensure the paths are correct
+onnx_model_path = '/var/model_converter/model.onnx'
+trt_engine_path = '/var/model_converter/model.engine'
+
+if not os.path.exists(onnx_model_path):
+    print(f"ONNX model file does not exist: {onnx_model_path}")
+else:
+    if build_engine(onnx_model_path, trt_engine_path) is None:
+        print("Engine creation failed.")

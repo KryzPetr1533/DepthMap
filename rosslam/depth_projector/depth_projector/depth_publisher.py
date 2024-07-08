@@ -9,6 +9,7 @@ from sensor_msgs.msg import Image
 import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
+import os
 
 class DepthPublisher(Node):
     def __init__(self):
@@ -22,9 +23,16 @@ class DepthPublisher(Node):
         self.frame_height = self.get_parameter('frame_height').get_parameter_value().integer_value
 
         # Load TRT engine
-        self.engine = self.load_trt_engine('../../model_converter/model.engine')
-        self.context = self.engine.create_execution_context()
-        self.intrinsics = self.get_intrinsics('../../rosslam/camera_params/intrincities.xml')
+        self.engine = self.load_trt_engine('/var/model_converter/model.engine')
+        if self.engine is None:
+            self.get_logger().error("Failed to load TensorRT engine.")
+            return
+
+        self.execution_context = self.engine.create_execution_context()
+        if self.execution_context is None:
+            self.get_logger().error("Failed to create TensorRT execution context.")
+            return
+        self.intrinsics = self.get_intrinsics('/var/camera_params/intrinsics.xml')
         # Basic setup
         self.bridge = CvBridge()
 
@@ -32,7 +40,7 @@ class DepthPublisher(Node):
         self.left_image_sub = message_filters.Subscriber(self, 'left_image', Image)
         self.right_image_sub = message_filters.Subscriber(self, 'right_image', Image)
         self.get_logger().info('Synchronizing images')
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.left_image_sub, self.right_image_sub], 10, 0.1, allow_headless=True)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.left_image_sub, self.right_image_sub], 10, 0.1)
         self.ts.registerCallback(self.image_callback)
         # Disparity publisher
         self.depth_pub = self.create_publisher(Depth, 'depth_publisher', 10)
@@ -42,9 +50,20 @@ class DepthPublisher(Node):
         Load TRT engine
         '''
         TRT_LOGGER = trt.Logger(trt.Logger.INFO)
+        if not os.path.exists(engine_path):
+            self.get_logger().error(f"Engine file not found at {engine_path}")
+            return None
+        
         with open(engine_path, 'rb') as f, trt.Runtime(TRT_LOGGER) as runtime:
-            engine = runtime.deserialize_cuda_engine(f.read())
-        return engine
+            try:
+                engine = runtime.deserialize_cuda_engine(f.read())
+                if engine is None:
+                    script_dir = os.path.dirname(os.path.realpath(__file__))
+                    self.get_logger().error(f"Failed to load engine from {script_dir}")
+                return engine
+            except Exception as e:
+                self.get_logger().error(f"Exception while loading engine: {e}")
+                return None
     
     def get_intrinsics(self, file_path):
         # Open the file storage for reading
@@ -117,18 +136,14 @@ class DepthPublisher(Node):
         d_input = cuda.mem_alloc(input_tensor.nbytes)
         d_output = cuda.mem_alloc(output.nbytes)
 
-        self.context.set_tensor_address(self.engine.get_tensor_name(0), int(d_input)) # input buffer
-        self.context.set_tensor_address(self.engine.get_tensor_name(1), int(d_output)) # output buffer
+        self.execution_context.set_tensor_address(self.engine.get_tensor_name(0), int(d_input)) # input buffer
+        self.execution_context.set_tensor_address(self.engine.get_tensor_name(1), int(d_output)) # output buffer
 
         stream = cuda.Stream()
         # Copy images to the GPU
         cuda.memcpy_htod_async(d_input, input_tensor, stream)
 
-        #  bindings = [int(d_input), int(d_output)]
-
-        success = self.context.execute_async_v3(stream_handle=stream.handle)
-        # self.context.execute_async_v2(bindings=bindings, stream_handle=stream.handle)
-
+        success = self.execution_context.execute_async_v3(stream_handle=stream.handle)
         
         print(success)
         # Copy result from GPU
