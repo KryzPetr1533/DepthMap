@@ -37,8 +37,8 @@ class DepthPublisher(Node):
         self.bridge = CvBridge()
 
         # Images subscription
-        self.left_image_sub = message_filters.Subscriber(self, 'left_image', Image)
-        self.right_image_sub = message_filters.Subscriber(self, 'right_image', Image)
+        self.left_image_sub = message_filters.Subscriber(self, Image, 'left_image')
+        self.right_image_sub = message_filters.Subscriber(self, Image, 'right_image')
         self.get_logger().info('Synchronizing images')
         self.ts = message_filters.ApproximateTimeSynchronizer([self.left_image_sub, self.right_image_sub], 10, 0.1)
         self.ts.registerCallback(self.image_callback)
@@ -113,6 +113,7 @@ class DepthPublisher(Node):
         msg.matr = depth.flatten().tolist()
         msg.intrinsics = self.intrinsics['Rectifyed_mat_left'].flatten().tolist()
         self.depth_pub.publish(msg)
+        self.get_logger().info("Publishing depth.")
 
     def process_images(self, left_img, right_img):
         '''
@@ -120,9 +121,14 @@ class DepthPublisher(Node):
         Run inference
         Return disparity
         '''
+        # self.get_logger().info("Frame width" + self.frame_width + ", frame height" + self.frame_height)
         rectified_left = cv.remap(left_img, self.intrinsics['Left_Stereo_Map_x'], self.intrinsics['Left_Stereo_Map_y'], cv.INTER_LINEAR)
         rectified_right = cv.remap(right_img, self.intrinsics['Right_Stereo_Map_x'], self.intrinsics['Right_Stereo_Map_y'], cv.INTER_LINEAR)
-        target_height, target_width = self.frame_height, self.frame_width
+        
+        # Turns out it's safer to take engine's params as base
+        target_height, target_width = self.engine.get_tensor_shape(
+            self.engine.get_tensor_name(0))[2], self.engine.get_tensor_shape(
+                self.engine.get_tensor_name(0))[3]
         left_img_res = cv.resize(rectified_left, (target_width, target_height))
         right_img_res = cv.resize(rectified_right, (target_width, target_height))
 
@@ -130,7 +136,7 @@ class DepthPublisher(Node):
         left_img_chw = left_img_res.transpose((2, 0, 1)).astype('float32')
         right_img_chw = right_img_res.transpose((2, 0, 1)).astype('float32')
 
-        input_tensor = np.ascontiguousarray(np.array([left_img_chw, right_img_chw]))
+        input_tensor = np.ascontiguousarray(np.array([left_img_chw, right_img_chw]), dtype=np.float32)
         input_tensor = np.expand_dims(input_tensor, axis=0)
         output = np.empty((1, target_height, target_width, 1), dtype=np.float32)
         d_input = cuda.mem_alloc(input_tensor.nbytes)
@@ -145,11 +151,16 @@ class DepthPublisher(Node):
 
         success = self.execution_context.execute_async_v3(stream_handle=stream.handle)
         
-        print(success)
+        if success:
+            self.get_logger().info('Disparity is found.')
+        else:
+            self.get_logger().error('Engine cannot be executed.')
+        
         # Copy result from GPU
         cuda.memcpy_dtoh_async(output, d_output, stream)
         stream.synchronize()
         output = np.squeeze(output, axis=(0, 3))  # Shape: [480, 640]
+        self.get_logger().info('Transfering disparity.')
 
         return output
     
