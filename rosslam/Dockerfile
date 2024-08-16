@@ -1,4 +1,3 @@
-# Install Python 3.8 and ROS
 FROM python:3.8
 FROM ros:humble
 
@@ -18,19 +17,27 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     python3-colcon-clean \
     wget \
+    ros-humble-rviz2 \
+    ros-humble-rviz-common \
+    ros-humble-rviz-rendering \
+    ros-humble-rviz-visual-tools \
+    ros-humble-rviz-default-plugins \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    mesa-utils \
     python3-pip && python3 -m pip install --upgrade pip
 
-# Download and install the CUDA keyring for Ubuntu 22.04
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+# Download and install the CUDA keyring for Ubuntu 24.04
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
-    apt-get install -y cuda-toolkit-12-5
+    apt-get install -y cuda-toolkit-12-6
 
 # Set environment variables for CUDA
-ENV PATH=/usr/local/cuda-12.5/bin:${PATH}
-ENV LD_LIBRARY_PATH=/usr/local/cuda-12.5/lib64:${LD_LIBRARY_PATH}
+ENV PATH=/usr/local/cuda-12.6/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
-# Copy requirements.txt
+# Copy requirements.txt and additional files
 COPY requirements.txt .
 COPY ./model_converter/model.* /var/model_converter/
 COPY ./camera_params/intrinsics.xml /var/camera_params/
@@ -38,8 +45,7 @@ COPY ./camera_params/intrinsics.xml /var/camera_params/
 # install ROS dependencies
 RUN python3 -m pip install -r requirements.txt
 
-# install project dependecies
-# RUN echo "source /opt/ros/humble/install/setup.bash" >> ~/.bashrc
+# install project dependencies
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
 RUN echo "source /rosslam/install/setup.bash" >> /root/.bashrc
 RUN touch /root/setup.sh

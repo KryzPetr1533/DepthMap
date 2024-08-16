@@ -10,7 +10,9 @@ if __name__ == "__main__":
     parser.add_argument('--image', action='store', type=str, default='rosslam-image')
     parser.add_argument('--hostname', action='store', type=str, default='rosslam')
     parser.add_argument('--name', action='store', type=str, default='rosslam-docker-instance')
-
+    parser.add_argument('--cam1_ind', action='store', type=str, default='0')
+    parser.add_argument('--cam2_ind', action='store', type=str, default='2')
+ 
     args = parser.parse_args()
 
     # commands example
@@ -29,10 +31,13 @@ if __name__ == "__main__":
                "--network", "host",
                "--gpus", "all",
                "-e", "DISPLAY",
-               "--device", "/dev/video0",
-               "--device", "/dev/video2",
+               "--device", "/dev/video" + args.cam1_ind,
+               "--device", "/dev/video" + args.cam2_ind,
                "--hostname", args.hostname,
                "-v", ".:/rosslam",
+               "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+               "-e", "DISPLAY=$DISPLAY",
+               "-e", "QT_X11_NO_MITSHM=1",
                "--name", args.name,
                args.image
         ]
