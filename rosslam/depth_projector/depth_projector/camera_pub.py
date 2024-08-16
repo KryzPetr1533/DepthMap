@@ -25,7 +25,7 @@ class ImagePublisher(Node):
         
         
         self.cap_left = cv2.VideoCapture(0, cv2.CAP_V4L2)
-        self.cap_right = cv2.VideoCapture(1, cv2.CAP_V4L2)
+        self.cap_right = cv2.VideoCapture(2, cv2.CAP_V4L2)
 
         self.cap_left.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
         self.cap_left.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
