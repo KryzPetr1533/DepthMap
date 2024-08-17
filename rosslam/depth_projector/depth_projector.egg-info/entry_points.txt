@@ -1,0 +1,5 @@
+[console_scripts]
+camera_pub = depth_projector.camera_pub:main
+depth_publisher = depth_projector.depth_publisher:main
+projector = depth_projector.projector:main
+

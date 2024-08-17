@@ -28,7 +28,6 @@ def calibration():
     imageR = "imgR"
     imagesLeft = glob.glob(path + imageL + '*' + extention).sort()
     imagesRight = glob.glob(path + imageR + '*' + extention).sort()
-    print()
 
     for imgLeft, imgRight in zip(imagesLeft, imagesRight):
         imgL = cv.imread(imgLeft)

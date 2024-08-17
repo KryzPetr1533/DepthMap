@@ -368,3 +368,5 @@ log
 install
 
 .ipynb_checkpoints
+
+rosslam/depth_projector/dist

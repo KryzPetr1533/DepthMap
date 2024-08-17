@@ -31,7 +31,7 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
 
         if draw_images:
             cv.imshow("gray image left", gray_l)
-            cv.imshow("gray image_right", gray_r)
+            cv.imshow("gray image right", gray_r)
             cv.waitKey(0)
 
         ret_l, corners_l = cv.findChessboardCorners(gray_l,
@@ -107,7 +107,7 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
                                                                                        criteria_stereo,
                                                                                        flags)
 
-    baseline = Trns[0] * cell_size
+    baseline = np.linalg.norm(Trns)
     rectify_scale = 1
     rect_l, rect_r, proj_mat_l, proj_mat_r, Q, roiL, roiR = cv.stereoRectify(new_mtxL, distL, new_mtxR, distR,
                                                                              gray_l.shape[::-1], Rot, Trns,
@@ -125,7 +125,8 @@ def stereo_calibration(paired_images, calibration_params_path, chessboard_size, 
     cv_file.write("Left_Stereo_Map_y", Left_Stereo_Map[1])
     cv_file.write("Right_Stereo_Map_x", Right_Stereo_Map[0])
     cv_file.write("Right_Stereo_Map_y", Right_Stereo_Map[1])
-    cv_file.write("Trns", Trns)
+    cv_file.write("Mat_left", mtxL)
+    cv_file.write("Rectifyed_mat_left", proj_mat_l[0:3, 0:3])
     cv_file.write("Baseline", baseline)
     cv_file.release()
 

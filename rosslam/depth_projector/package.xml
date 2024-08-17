@@ -4,7 +4,7 @@
   <name>depth_projector</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="ansicpp2020@gmail.com">emperornao</maintainer>
+  <maintainer email="petrassassin03@gmail.com">devExplorer</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
@@ -12,7 +12,8 @@
   <exec_depend>rclpy</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   <exec_depend>msgs_definitions</exec_depend>
-
+  <exec_depend>cv_bridge</exec_depend>
+  
   <depend>python3-opencv</depend>
 
   <test_depend>ament_copyright</test_depend>

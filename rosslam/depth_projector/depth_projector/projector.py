@@ -15,7 +15,7 @@ class DepthProjector(Node):
         super().__init__('depth_projector')
         self.depth_io = self.create_subscription(
             Depth,
-            'depth',
+            'depth_publisher',
             self.depth_callback,
             10
         )
@@ -33,6 +33,7 @@ class DepthProjector(Node):
         pcl = self.depth_to_pcl(data, intr)
 
         msg = PointCloud()
+        msg.header.frame_id = 'map'
         for point in pcl:
             x, y, z = point
             p = Point32()

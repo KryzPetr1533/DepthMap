@@ -11,17 +11,26 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'opencv-python',  # Ensure all required packages are listed
+        'cv_bridge',
+        'numpy',
+        'pycuda',
+        'tensorrt',
+    ],
     zip_safe=True,
-    maintainer='emperornao',
-    maintainer_email='ansicpp2020@gmail.com',
+    maintainer='devExplorer',
+    maintainer_email='pkkryzh1533@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'depth_publisher = depth_projector.mock_depth_publisher:main',
-            'projector = depth_projector.projector:main'
+            "camera_pub = depth_projector.camera_pub:main",
+            "depth_publisher = depth_projector.depth_publisher:main",
+            "projector = depth_projector.projector:main"
         ],
+        
     },
 )
