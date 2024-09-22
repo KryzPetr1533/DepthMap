@@ -3,3 +3,4 @@ opencv-python
 pycuda
 tensorrt-cu12
 jupyter
+tabulate
