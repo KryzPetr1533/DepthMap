@@ -37,7 +37,7 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_P
 
 # Copy requirements.txt and additional files
 COPY requirements.txt .
-COPY ./model_converter/model.* /var/model_converter/
+COPY ./model_converter/model* /var/model_converter/
 COPY ./camera_params/intrinsics.xml /var/camera_params/
 
 # install ROS dependencies
