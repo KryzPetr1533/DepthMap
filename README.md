@@ -8,7 +8,8 @@
 
 ## Description
 
-This project focuses on testing and utilizing AI models to create point clouds from stereo images. Essentially, the system takes paired images from a stereo camera, computes the disparity image using a neural network, and then generates a point cloud.
+This project focuses on testing and utilizing AI models to create point clouds from stereo images. Essentially, the system takes paired images from a stereo camera, computes the disparity image using a neural network, and then generates a point cloud. /
+The resulting point cloud is a part of future 
 
 ## Requirements
 
@@ -16,29 +17,25 @@ To run this system, you need a digital stereo camera to provide input images. Th
 
 The system uses NVidia CUDA for GPU-accelerated AI model computations. To optimize processing time, the TensorRT model format is employed, and the `pycuda` package is used to execute the model on the GPU.
 
-Regardless of the launch option you choose, CUDA drivers must be installed on the device. For detailed instructions on installing CUDA drivers, please refer to the official NVidia CUDA installation guide for [Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) or [Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html).
+CUDA toolkit must be installed on the device. For detailed instructions on installing CUDA drivers, please refer to the official NVidia CUDA installation guide for [Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) or [Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html).
 
 ### Additional Dependencies
-
+- git-lfs
 - Python 3.10
-- ROS Humble (for Option 1)
-- Docker (for Option 2)
+- Docker
+
+### Models
+
+For disparity estimation Hitmap model was used. Before starting the container download TensorRT model use git LFS by running:
+
+```bash
+git lfs pull
+```
+Downloaded models will be located in `/model_converter`.
 
 ## Launch
 
-Navigate to the `rosslam` directory.
-
-### Option 1: Using ROS Humble
-
-If ROS Humble is already installed, create a virtual environment (if it doesn't already exist) and install the necessary Python packages with the following command:
-
-```bash
-pip3 install -r requirements.txt
-```
-
-### Option 2: Using Docker with Ubuntu 24.04 LTS
-
-To build and start the Docker container, navigate to the `rosslam` directory and run:
+To build and start the Docker container run:
 
 ```bash
 python3 d.py -bs
@@ -48,6 +45,19 @@ After installing packages or building the Docker container, launch the system by
 
 ```bash
 bash launch.sh
+```
+
+### RVIZ2
+
+RVIZ2 is a visualization tool used primarily with ROS 2 for visualizing sensor data, robot states, and environment information in a 3D graphical interface. To launch RVIZ2 inside the container run the following commands: \
+Outside the container
+``` bash
+xhost local:+
+```
+
+Inside the container
+```
+rviz2
 ```
 
 ## Contributing
