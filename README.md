@@ -15,6 +15,10 @@ The resulting point cloud is a part of future
 
 To run this system, you need a digital stereo camera to provide input images. The computation relies on an NVidia GPU to ensure efficient processing. Therefore, an NVidia CUDA-compatible GPU is required.
 
+Example of stereo camera used (pair of A4tech FHD 1080p PC camera
+Model: pk-910h):
+![alt text](camera_params/camera.png)
+
 The system uses NVidia CUDA for GPU-accelerated AI model computations. To optimize processing time, the TensorRT model format is employed, and the `pycuda` package is used to execute the model on the GPU.
 
 CUDA toolkit must be installed on the device. For detailed instructions on installing CUDA drivers, please refer to the official NVidia CUDA installation guide for [Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) or [Linux](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html).
