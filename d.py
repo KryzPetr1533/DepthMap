@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+import os
 
 
 if __name__ == "__main__":
@@ -26,6 +27,7 @@ if __name__ == "__main__":
         print(" ".join(cmd))
         subprocess.check_call(cmd)
     if "start" in args.actions:
+        display_env = os.getenv("DISPLAY", ":1")
         cmd = ["docker", "run",
                "--rm", "-it",
                "--network", "host",
@@ -33,10 +35,10 @@ if __name__ == "__main__":
                "--device", "/dev/video" + args.cam1_ind,
                "--device", "/dev/video" + args.cam2_ind,
                "--hostname", args.hostname,
+               "-e", f"DISPLAY={display_env}",
+               "-e", "QT_X11_NO_MITSHM=1",
                "-v", ".:/rosslam",
                "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",
-               "-e", "DISPLAY=$DISPLAY",
-               "-e", "QT_X11_NO_MITSHM=1",
                "--name", args.name,
                args.image
         ]
