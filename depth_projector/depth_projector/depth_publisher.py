@@ -11,6 +11,14 @@ import pycuda.driver as cuda
 import pycuda.autoinit
 import os
 
+class MyProfiler(trt.IProfiler):
+    def __init__(self, node):
+        super(MyProfiler, self).__init__()
+        self.node = node
+
+    def report_layer_time(self, layer_name, ms):
+        self.node.get_logger().info(f"Layer {layer_name} took {ms}ms")
+
 class DepthPublisher(Node):
     def __init__(self):
         super().__init__('depth_publisher')
@@ -23,12 +31,13 @@ class DepthPublisher(Node):
         self.frame_height = self.get_parameter('frame_height').get_parameter_value().integer_value
 
         # Load TRT engine
-        self.engine = self.load_trt_engine('/var/model_converter/model.engine')
+        self.engine = self.load_trt_engine('/var/model_converter/model_480.engine')
         if self.engine is None:
             self.get_logger().error("Failed to load TensorRT engine.")
             return
 
         self.execution_context = self.engine.create_execution_context()
+        # self.execution_context.profiler = MyProfiler(self)
         if self.execution_context is None:
             self.get_logger().error("Failed to create TensorRT execution context.")
             return
@@ -49,7 +58,7 @@ class DepthPublisher(Node):
         '''
         Load TRT engine
         '''
-        TRT_LOGGER = trt.Logger(trt.Logger.INFO)
+        TRT_LOGGER = trt.Logger(trt.Logger.VERBOSE)
         if not os.path.exists(engine_path):
             self.get_logger().error(f"Engine file not found at {engine_path}")
             return None
@@ -141,11 +150,16 @@ class DepthPublisher(Node):
         input_tensor = np.ascontiguousarray(np.array([left_img_chw, right_img_chw]), dtype=np.float32)
         input_tensor = np.expand_dims(input_tensor, axis=0)
         output = np.empty((1, target_height, target_width, 1), dtype=np.float32)
+        output_1 = np.empty((1, target_height, target_width, 1), dtype=np.float32)
         d_input = cuda.mem_alloc(input_tensor.nbytes)
         d_output = cuda.mem_alloc(output.nbytes)
+        d_output_1 = cuda.mem_alloc(output.nbytes)
 
+        self.get_logger().info(f'Shape of the tensor: {input_tensor.shape}')
+        
         self.execution_context.set_tensor_address(self.engine.get_tensor_name(0), int(d_input)) # input buffer
         self.execution_context.set_tensor_address(self.engine.get_tensor_name(1), int(d_output)) # output buffer
+        self.execution_context.set_tensor_address(self.engine.get_tensor_name(2), int(d_output_1)) # output buffer
 
         stream = cuda.Stream()
         # Copy images to the GPU
