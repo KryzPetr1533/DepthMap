@@ -1,6 +1,0 @@
-setuptools
-opencv-python
-cv_bridge
-numpy
-pycuda
-tensorrt

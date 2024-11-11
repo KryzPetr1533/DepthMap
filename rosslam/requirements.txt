@@ -1,5 +1,0 @@
-setuptools
-opencv-python
-pycuda
-tensorrt-cu12==10.1.0
-jupyter
