@@ -12,9 +12,8 @@
   <exec_depend>rclpy</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   <exec_depend>msgs_definitions</exec_depend>
-  <exec_depend>cv_bridge</exec_depend>
+  <!-- <exec_depend>cv_bridge</exec_depend> -->
   
-  <exec_depend>python3-opencv</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

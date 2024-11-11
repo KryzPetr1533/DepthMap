@@ -24,11 +24,13 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libgl1-mesa-dri \
     mesa-utils \
+    python3.10-venv \
     python3-pip && python3 -m pip install --upgrade pip && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
-    apt-get install -y cuda-toolkit-12-6
+    apt-get install -y cuda-toolkit-12-6 && \
+    rm -rf /var/lib/apt/lists/*
     
 # Set environment variables for CUDA
 ENV PATH=/usr/local/cuda-12.6/bin${PATH:+:${PATH}}
@@ -41,12 +43,18 @@ COPY ./model_converter/model* /var/model_converter/
 COPY ./camera_params/intrinsics.xml /var/camera_params/
 
 # install ROS dependencies
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip install --no-cache-dir -r requirements.txt
 
 # install project dependencies
-RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+    echo "source /opt/venv/bin/activate" >> /root/.bashrc && \
+    echo "export PYTHONPATH=$VIRTUAL_ENV/lib/python3.10/site-packages:\$PYTHONPATH" >> /root/.bashrc && \
+    echo "export ROS_PYTHON_VERSION=3" >> /root/.bashrc && \
+    touch /root/setup.sh
 # RUN echo "source /rosslam/install/setup.bash" >> /root/.bashrc
-RUN touch /root/setup.sh
 
 # launch terminal
 CMD ["/bin/bash"]

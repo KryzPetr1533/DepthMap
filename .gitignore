@@ -372,4 +372,4 @@ install
 
 .ipynb_checkpoints
 
-rosslam/depth_projector/dist
+rosslam/depth_projector/dist*

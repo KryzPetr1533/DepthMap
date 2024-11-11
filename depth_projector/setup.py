@@ -13,11 +13,16 @@ setup(
     ],
     install_requires=[
         'setuptools',
-        'opencv-python',  # Ensure all required packages are listed
-        'cv_bridge',
-        'numpy',
+        'pytools>=2011.2',
+        'platformdirs>=2.2.0',
+        'numpy>=2.1.0',
+        'opencv-python-headless',
+        'cv_bridge'
         'pycuda',
         'tensorrt-cu12',
+        'jupyter',
+        'tqdm',
+        'tabulate',
     ],
     zip_safe=True,
     maintainer='devExplorer',
